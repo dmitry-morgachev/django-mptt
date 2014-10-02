@@ -1525,6 +1525,8 @@ class ModelMoveToOrderInsertionBy(TreeTestCase):
     |+ Accounts Receivable
     ||+ Unpaid
     |||+ Lawyers contacted
+    |||+ Angry Aardvark
+    |||+ Zleepy Zeebra
     '''
 
     def setUp(self):

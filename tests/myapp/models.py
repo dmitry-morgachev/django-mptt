@@ -219,6 +219,7 @@ mptt.register(Group, order_insertion_by=('name',))
 
 
 # order_insertion_by, https://github.com/django-mptt/django-mptt/issues/266
+@python_2_unicode_compatible
 class Folder(MPTTModel):
     name = models.CharField(max_length=100)
     parent = TreeForeignKey('self', blank=True, null=True,
@@ -228,5 +229,5 @@ class Folder(MPTTModel):
     class MPTTMeta:
         order_insertion_by = ('name',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
