@@ -218,6 +218,7 @@ TreeForeignKey(Group, blank=True, null=True).contribute_to_class(Group, 'parent'
 mptt.register(Group, order_insertion_by=('name',))
 
 
+# order_insertion_by, https://github.com/django-mptt/django-mptt/issues/266
 class Folder(MPTTModel):
     name = models.CharField(max_length=100)
     parent = TreeForeignKey('self', blank=True, null=True,

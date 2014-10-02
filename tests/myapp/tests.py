@@ -1507,7 +1507,7 @@ class TestUnsaved(TreeTestCase):
                 getattr(Genre(), method))
 
 
-class ModelMoveToOrderInsertionBy(TestCase):
+class ModelMoveToOrderInsertionBy(TreeTestCase):
     '''
     Directory structure is like this:
 
@@ -1576,6 +1576,22 @@ class ModelMoveToOrderInsertionBy(TestCase):
             name='Zleepy Zeebra',
             parent=self.folder['Unpaid'],
         )
+
+        # Sanity check, to ensure that nothing goes wrong.
+        self.assertTreeEqual(Folder.objects.all(), '''
+            1 - 1 0 1 24
+            8 1 1 1 2 11
+            9 8 1 2 3 10
+            11 9 1 3 4 5
+            10 9 1 3 6 7
+            12 9 1 3 8 9
+            2 1 1 1 12 15
+            3 2 1 2 13 14
+            4 1 1 1 16 21
+            6 4 1 2 17 18
+            5 4 1 2 19 20
+            7 1 1 1 22 23
+        ''')
 
     def test_lawyers_contacted_should_have_ancestors(self):
         self.assertEqual(
