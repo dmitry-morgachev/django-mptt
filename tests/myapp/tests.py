@@ -170,12 +170,26 @@ class ReparentingTestCase(TreeTestCase):
         g3 = Genre.objects.create(name='Three', parent=g2)
         g4 = Genre.objects.create(name='Four', parent=g3)
 
+        self.assertTreeEqual(Genre.objects.all(), '''
+            12 - 1 0 1 2
+            13 - 2 0 1 8
+            14 13 2 1 2 7
+            15 14 2 2 3 6
+            16 15 2 3 4 5
+        ''')
+
         g1.parent = g0
         g1.save()
+
+        # The following line is necessary currently, but *maybe* shouldn't be.
+        # g3 = Genre.objects.get(pk=g3.pk)
+
         g3.parent = g1
         g3.save()
 
-        self.assertEqual(list(Genre.objects.get(id=g4.id).get_ancestors()), [g0, g1, g3])
+        self.assertEqual(
+            list(Genre.objects.get(id=g4.id).get_ancestors()),
+            [g0, g1, g3])
 
     def test_new_root_from_leaf_with_siblings(self):
         platformer_2d = Genre.objects.get(id=3)
