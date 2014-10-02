@@ -1595,6 +1595,9 @@ class ModelMoveToOrderInsertionBy(TreeTestCase):
             7 1 1 1 22 23
         ''')
 
+        self.folder = dict(
+            (folder.name, folder) for folder in Folder.objects.all())
+
     def test_lawyers_contacted_should_have_ancestors(self):
         self.assertEqual(
             self.folder['Lawyers contacted'].get_ancestors().count(), 3
