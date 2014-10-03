@@ -183,6 +183,7 @@ class ReparentingTestCase(TreeTestCase):
 
         # The following line is necessary currently, but *maybe* shouldn't be.
         # g3 = Genre.objects.get(pk=g3.pk)
+        # g3._refresh_mptt_from_db()
 
         g3.parent = g1
         g3.save()

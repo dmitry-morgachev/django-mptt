@@ -758,6 +758,22 @@ class MPTTModel(six.with_metaclass(MPTTModelBase, models.Model)):
                 self._mptt_saved = manager.filter(pk=self.pk).exists()
             return self._mptt_saved
 
+    def _refresh_mptt_from_db(self):
+        fields = [
+            self._mptt_meta.tree_id_attr,
+            self._mptt_meta.left_attr,
+            self._mptt_meta.right_attr,
+            self._mptt_meta.level_attr,
+        ]
+        if hasattr(self, 'refresh_from_db'):
+            self.refresh_from_db(fields=fields)
+        else:
+            # What about deferred models?
+            values = self.__class__._default_manager.using(
+                self._state.db).values(*fields).get(pk=self.pk)
+            for field, value in values.items():
+                setattr(self, field, value)
+
     def save(self, *args, **kwargs):
         """
         If this is a new node, sets tree fields up before it is inserted
@@ -776,6 +792,9 @@ class MPTTModel(six.with_metaclass(MPTTModelBase, models.Model)):
         tree option set, the node will be inserted or moved to the
         appropriate position to maintain ordering by the specified field.
         """
+        if self.pk:
+            self._refresh_mptt_from_db()
+
         do_updates = self.__class__._mptt_updates_enabled
         track_updates = self.__class__._mptt_is_tracking
 
