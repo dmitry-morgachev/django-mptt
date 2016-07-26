@@ -3,8 +3,9 @@ A custom manager for working with trees of objects.
 """
 from __future__ import unicode_literals
 
+from collections import OrderedDict
 import contextlib
-from itertools import groupby
+from itertools import count, groupby
 
 from django.db import models, connections, router
 from django.db.models import F, ManyToManyField, Max, Q
@@ -447,22 +448,30 @@ class TreeManager(models.Manager.from_queryset(TreeQuerySet)):
         """
         return self.filter(parent=None)
 
+    def _mptt_rebuild(self, tree, pks, counter, level, tree_id):
+        for pk in pks:
+            lft = next(counter)
+            if pk in tree:
+                self._mptt_rebuild(tree, tree[pk], counter, level + 1, tree_id)
+            self.filter(pk=pk).update(
+                lft=lft, rght=next(counter), level=level, tree_id=tree_id)
+
     def rebuild(self):
         """
         Rebuilds all trees in the database table using `parent` link.
         """
         opts = self.model._mptt_meta
-
-        qs = self.filter(parent=None)
+        qs = self
+        # TODO Fail hard if queryset is filtered already.
         if opts.order_insertion_by:
             qs = qs.order_by(*opts.order_insertion_by)
-        pks = qs.values_list('pk', flat=True)
 
-        rebuild_helper = self._rebuild_helper
-        idx = 0
-        for pk in pks:
-            idx += 1
-            rebuild_helper(pk, 1, idx)
+        tree = OrderedDict()
+        for pk, parent in qs.values_list('pk', 'parent'):
+            tree.setdefault(parent, []).append(pk)
+
+        for tree_id, pk in enumerate(tree[None]):
+            self._mptt_rebuild(tree, [pk], count(1), 0, tree_id + 1)
     rebuild.alters_data = True
 
     def partial_rebuild(self, tree_id):
@@ -472,40 +481,15 @@ class TreeManager(models.Manager.from_queryset(TreeQuerySet)):
         """
         opts = self.model._mptt_meta
 
-        qs = self.filter(parent=None, tree_id=tree_id)
+        qs = self.filter(tree_id=tree_id)
         if opts.order_insertion_by:
             qs = qs.order_by(*opts.order_insertion_by)
-        pks = qs.values_list('pk', flat=True)
-        if not pks:
-            return
-        if len(pks) > 1:
-            raise RuntimeError(
-                "More than one root node with tree_id %d. That's invalid,"
-                " do a full rebuild." % tree_id)
 
-        self._rebuild_helper(pks[0], 1, tree_id)
+        tree = OrderedDict()
+        for pk, parent in qs.values_list('pk', 'parent'):
+            tree.setdefault(parent, []).append(pk)
 
-    def _rebuild_helper(self, pk, left, tree_id, level=0):
-        opts = self.model._mptt_meta
-        right = left + 1
-
-        qs = self.filter(parent__pk=pk)
-        if opts.order_insertion_by:
-            qs = qs.order_by(*opts.order_insertion_by)
-        child_ids = qs.values_list('pk', flat=True)
-
-        rebuild_helper = self._rebuild_helper
-        for child_id in child_ids:
-            right = rebuild_helper(child_id, right, tree_id, level + 1)
-
-        qs = self.model._default_manager.filter(pk=pk).update(
-            lft=left,
-            rght=right,
-            level=level,
-            tree_id=tree_id
-        )
-
-        return right + 1
+        self._mptt_rebuild(tree, tree[None], count(1), 0, tree_id)
 
     def _calculate_inter_tree_move_values(self, node, target, position):
         """

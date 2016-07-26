@@ -2063,7 +2063,7 @@ class RebuildTestCase(TreeTestCase):
             tree_id=-1,
         )
 
-        with self.assertNumQueries(23):
+        with self.assertNumQueries(12):
             Genre.objects.rebuild()
 
         self.assertTreeEqual(Genre.objects.all(), """
