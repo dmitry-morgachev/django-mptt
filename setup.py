@@ -4,13 +4,13 @@ from setuptools import find_packages, setup
 
 
 setup(
-    name='django-mptt',
+    name='django-mptt-nomagic',
     description='''Utilities for implementing Modified Preorder Tree Traversal
         with your Django Models and working with trees of Model instances.''',
     version=__import__('mptt').__version__,
-    author='Craig de Stigter',
-    author_email='craig.ds@gmail.com',
-    url='http://github.com/django-mptt/django-mptt',
+    author='Matthias Kestenholz',
+    author_email='mk@feinheit.ch',
+    url='https://github.com/matthiask/django-mptt-nomagic',
     license='MIT License',
     packages=find_packages(exclude=['tests', 'tests.*']),
     include_package_data=True,
@@ -25,12 +25,8 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
         'Topic :: Utilities',
     ],
 )
