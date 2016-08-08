@@ -10,7 +10,7 @@ setup(
     version=__import__('mptt').__version__,
     author='Matthias Kestenholz',
     author_email='mk@feinheit.ch',
-    url='https://github.com/matthiask/django-mptt-nomagic',
+    url='https://github.com/matthiask/django-mptt/tree/mk/nomagic',
     license='MIT License',
     packages=find_packages(exclude=['tests', 'tests.*']),
     include_package_data=True,
