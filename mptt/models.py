@@ -256,25 +256,13 @@ class MPTTModelBase(ModelBase):
         cls = super_new(meta, class_name, bases, class_dict)
 
         if not is_MPTTModel:
-            # Add a tree manager, if there isn't one already
             # NOTE: Django 1.10 lets models inherit managers without handholding.
+            # Add a tree manager, if there isn't one already
             if django.VERSION < (1, 10) and not cls._meta.abstract:
-                manager = getattr(cls, 'objects', None)
-                if manager is None:
-                    manager = cls._default_manager._copy_to_model(cls)
-                    manager.contribute_to_class(cls, 'objects')
-                elif manager.model != cls:
-                    # manager was inherited
-                    manager = manager._copy_to_model(cls)
-                    manager.contribute_to_class(cls, 'objects')
-
                 # make sure we have a tree manager somewhere
                 tree_manager = None
-                if hasattr(cls._meta, 'concrete_managers'):  # Django < 1.10
-                    cls_managers = cls._meta.concrete_managers + cls._meta.abstract_managers
-                    cls_managers = [r[2] for r in cls_managers]
-                else:
-                    cls_managers = cls._meta.managers
+                cls_managers = cls._meta.concrete_managers + cls._meta.abstract_managers
+                cls_managers = [r[2] for r in cls_managers]
 
                 for cls_manager in cls_managers:
                     if isinstance(cls_manager, TreeManager):
